@@ -1,0 +1,11 @@
+[package]
+name = "proxy"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+hyper = { features = ["server", "http1", "http2", "socket2", "tcp"], version = "0.14.19" }
+diesel = { version = "1.4.8" }
+tokio = { features = ["rt-multi-thread", "macros"], version = "1.8.3" }
