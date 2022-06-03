@@ -16,7 +16,6 @@ macro_rules! into_service {
                             async move {
                                 Ok::<Response<Body>, Infallible>(
                                     response
-                                    // Response::new("Test".into())
                                 )
                             }
                         }))
@@ -47,7 +46,6 @@ macro_rules! into_server {
                                     async move {
                                         Ok::<Response<Body>, Infallible>(
                                             response
-                                            // Response::new("Test".into())
                                         )
                                     }
                                 }))
@@ -56,5 +54,12 @@ macro_rules! into_server {
                 )
             )
         )
+    }
+}
+
+#[macro_export]
+macro_rules! arc_mutex {
+    ($item:expr) => {
+        Arc::new(Mutex::new($item))
     }
 }

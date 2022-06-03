@@ -6,6 +6,7 @@ mod server;
 mod plugin;
 mod database;
 mod utils;
+mod config;
 
 extern crate hyper;
 extern crate diesel;
@@ -27,12 +28,15 @@ use routing::{Router, Route};
 use server::{Server, IncomingRequest};
 use plugin::Plugin;
 use database::Database;
+use config::Configurator;
 
 struct OutgoingResponse {}
 struct PipelineError {}
 
 #[tokio::main]
 async fn main() -> Result<(), hyper::Error> {
+    let configurator = Configurator::new();
+
     let logger = Logger::new(None);
 
     let database = Database::new(
@@ -52,17 +56,8 @@ async fn main() -> Result<(), hyper::Error> {
     router_proxy.load_routes(routes);
 
 
-    let proxy_router = Arc::new(
-        Mutex::new(
-            router_proxy
-        )
-    );
-
-    let admin_router = Arc::new(
-        Mutex::new(
-            router_admin
-        )
-    );
+    let proxy_router = arc_mutex!(router_proxy);
+    let admin_router = arc_mutex!(router_admin);
 
     let proxy_address: SocketAddr = "127.0.0.1:8000".parse::<SocketAddr>().unwrap();
     let admin_address: SocketAddr = "127.0.0.1:8001".parse::<SocketAddr>().unwrap();
@@ -77,40 +72,4 @@ async fn main() -> Result<(), hyper::Error> {
     };
 
     run().await
-
-    /*
-    let service = into_service!(&router);
-
-
-    let server = Server::new(
-        HyperServer::bind(&address).serve(service)
-    );
-     */
-
-    /*
-    let server = Server::new(
-        HyperServer::bind(&address).serve(make_service_fn(move |_| {
-            let router_clone = router.clone();
-
-            async move {
-                Ok::<_, hyper::Error>(
-                    service_fn(move |_req: Request<Body>| {
-                        let locked_router = router_clone.lock().unwrap();
-                        let incoming_request: IncomingRequest = _req.into();
-                        let route = locked_router.explore_route(incoming_request);
-                        let response = locked_router.handle_route(route);
-
-                        async move {
-                            Ok::<Response<Body>, Infallible>(
-                                response
-                                // Response::new("Test".into())
-                            )
-                        }
-                    }))
-            }
-        }))
-    );
-     */
-
-    // proxy_server.run().await
 }
